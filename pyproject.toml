@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "runtime"
+version = "0.1.0"
+description = "Runtime engine for AI Delver"
+authors = ["Dante Ferreira"]
+readme = "README.md"
+packages = [{ include = "runtime" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+pymunk = "==6.11.1"
+pyglet = "*"
+pytiling = { path = "../pytiling-lib", develop = true }
+pyglet_dragonbones = { path = "../pyglet-dragonbones-lib", develop = true }
+level = { path = "../level-lib", develop = true }
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
