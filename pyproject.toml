@@ -14,6 +14,9 @@ pytiling = { path = "../pytiling-lib", develop = true }
 pyglet_dragonbones = { path = "../pyglet-dragonbones-lib", develop = true }
 level = { path = "../ai-delver-level", develop = true }
 
+# [tool.poetry.group.dev.dependencies]
+# poethepoet = "^0.36.0"
+
 [build-system]
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
