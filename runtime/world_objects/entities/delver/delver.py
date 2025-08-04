@@ -3,7 +3,7 @@ from pyglet_dragonbones.skeleton import Skeleton
 from .delver_body import DelverBody
 import pymunk
 from ..skeletal_entity import SkeletalEntity
-from pathlib import Path
+from runtime.config import ASSETS_PATH
 
 
 class Delver(SkeletalEntity):
@@ -35,7 +35,7 @@ class Delver(SkeletalEntity):
             delver_groups = None
 
         self.skeleton = Skeleton(
-            "assets/img/sprites/delver", groups=delver_groups, render=render
+            ASSETS_PATH / "img/sprites/delver", groups=delver_groups, render=render
         )
 
         super().__init__(runtime, body)

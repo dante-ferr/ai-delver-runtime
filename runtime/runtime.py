@@ -2,7 +2,6 @@ from typing import cast, Any
 from .world_objects import WorldObjectsController, WorldObject
 from .world_objects.entities.delver import Delver
 from .world_objects.items import Goal
-from pyglet_dragonbones import config as pdb_config
 import pymunk
 import json
 from pathlib import Path
@@ -10,11 +9,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from level.level import Level
-
-with open(Path(__file__).parent / "config.json", "r") as file:
-    config = json.load(file)
-
-pdb_config.fps = config["fps"]
 
 
 class Runtime:

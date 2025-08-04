@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "runtime" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11"
+python = ">=3.8.0"
 pymunk = "==6.11.1"
 pyglet = "*"
 pytiling = { path = "../pytiling-lib", develop = true }

@@ -144,7 +144,7 @@ name = "level"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = ">=3.11"
+python-versions = ">=3.10.0"
 groups = ["main"]
 files = []
 develop = true
@@ -364,7 +364,7 @@ name = "pyglet-dragonbones"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = ">=3.11"
+python-versions = ">=3.10.0"
 groups = ["main"]
 files = []
 develop = true
@@ -460,7 +460,7 @@ name = "pytiling"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = ">=3.11"
+python-versions = ">=3.10.0"
 groups = ["main"]
 files = []
 develop = true
@@ -478,5 +478,5 @@ url = "../pytiling-lib"
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.11"
-content-hash = "f7c4d36ccc259dd8a7989d2139a513afcb7ec538f460847b5246f651655091b5"
+python-versions = ">=3.10.0"
+content-hash = "56ef9e10f962b1775c08b209e23d23fc6fd1a93c8e8fce82fb743c83cc449279"
