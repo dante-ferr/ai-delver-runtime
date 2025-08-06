@@ -4,6 +4,10 @@ from .world_objects.entities.delver import Delver
 from .world_objects.items import Goal
 import pymunk
 import json
+from pytiling import (
+    TilemapBorderTracer,
+    PymunkTilemapPhysics,
+)
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -17,6 +21,8 @@ class Runtime:
         self.level: "Level" = level
         self.space = pymunk.Space()
         self.space.gravity = (0, 0)
+
+        self._setup_wall_physics()
 
         self.running = False
 
@@ -52,6 +58,11 @@ class Runtime:
     @property
     def tilemap(self):
         return self.level.map.tilemap
+
+    def _setup_wall_physics(self):
+        walls = self.level.map.tilemap.get_layer("walls")
+        border_tracer = TilemapBorderTracer(walls)
+        PymunkTilemapPhysics(border_tracer, self.space)
 
     def world_objects_controller_factory(self, space: "pymunk.Space"):
         world_objects_controller = WorldObjectsController()
