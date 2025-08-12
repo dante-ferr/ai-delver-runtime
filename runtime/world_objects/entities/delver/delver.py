@@ -35,7 +35,7 @@ class Delver(SkeletalEntity):
             delver_groups = None
 
         self.skeleton = Skeleton(
-            ASSETS_PATH / "img/sprites/delver", groups=delver_groups, render=render
+            str(ASSETS_PATH / "img/sprites/delver"), groups=delver_groups, render=render
         )
 
         super().__init__(runtime, body)

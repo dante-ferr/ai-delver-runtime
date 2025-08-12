@@ -8,7 +8,6 @@ from pytiling import (
     TilemapBorderTracer,
     PymunkTilemapPhysics,
 )
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
