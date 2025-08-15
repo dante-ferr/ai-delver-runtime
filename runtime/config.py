@@ -1,6 +1,13 @@
 import sys
 from pathlib import Path
+import json
+import os
 
+CURRENT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
+with open(CURRENT_DIR / "config.json", "r") as f:
+    config = json.load(f)
+
+PHYSICS_FPS = config["physics_fps"]
 
 def get_project_root() -> Path:
     """

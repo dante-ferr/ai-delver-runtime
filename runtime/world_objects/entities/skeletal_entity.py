@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 class SkeletalEntity(Entity):
     skeleton: "Skeleton"
 
-    def move(self, dt: float, move_angle: float):
+    def move(self, dt, move_angle: float):
         self.run_animation("run")
         super().move(dt, move_angle)
 

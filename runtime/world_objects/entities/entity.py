@@ -1,75 +1,82 @@
-from ...utils import angle_to_vector
-import math
-from pymunk import Vec2d
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 from ..world_object import WorldObject
+from pymunk import Vec2d
 
 if TYPE_CHECKING:
     from .entity_body import EntityBody
 
 
-class Entity(WorldObject):
-    move_speed = 200
+class EntityState(Enum):
+    """Defines the possible states of the entity."""
 
+    NORMAL = auto()
+    KNOCKBACK = auto()
+    TUMBLING = auto()
+
+
+class Entity(WorldObject):
     def __init__(self, runtime, body: "EntityBody"):
         super().__init__(runtime)
         self.body = body
+        self.body.entity = self
+        self.state = EntityState.NORMAL
+        self.is_moving_intentionally = False
 
     @property
     def shape(self):
         return next(iter(self.body.shapes))
 
-    def move(self, dt: float, move_angle: float):
-        """Make the entity move."""
+    def move(self, dt, move_angle: float):
+        if self.state != EntityState.NORMAL:
+            return
         self.set_target_angle(-move_angle - 90)
         self.update_angle_to_target(dt)
+        self.is_moving_intentionally = True
+        self.body.move(move_angle)
 
-        run_vector = angle_to_vector(move_angle)
-        run_velocity: list[float] = [
-            run_vector[0] * self.move_speed,
-            run_vector[1] * self.move_speed,
-        ]
+    def brake(self):
+        if self.state != EntityState.NORMAL:
+            return
+        self.body.brake()
 
-        magnitude = math.sqrt(run_velocity[0] ** 2 + run_velocity[1] ** 2)
-        if magnitude > self.move_speed:
-            run_velocity[0] *= self.move_speed / magnitude
-            run_velocity[1] *= self.move_speed / magnitude
+    def receive_impact(self, impulse_vector: Vec2d):
+        impulse_magnitude = impulse_vector.length
+        if impulse_magnitude >= self.body.TUMBLING_FORCE_THRESHOLD:
+            self.state = EntityState.TUMBLING
+            print("STATE CHANGE: TUMBLING")
+        elif impulse_magnitude >= self.body.KNOCKBACK_FORCE_THRESHOLD:
+            self.state = EntityState.KNOCKBACK
+            print("STATE CHANGE: KNOCKBACK")
+        self.body.receive_impact(impulse_vector)
 
-        force = Vec2d(
-            self.body.mass * run_velocity[0] / dt,
-            self.body.mass * run_velocity[1] / dt,
-        )
-        self.body.apply_force_at_local_point(force)
+    def return_to_normal_state(self):
+        if self.state != EntityState.NORMAL:
+            print("STATE CHANGE: NORMAL")
+            self.state = EntityState.NORMAL
+
+    def stand(self):
+        self.brake()
+
+    def update(self, dt):
+        if self.state == EntityState.NORMAL:
+            if self.is_moving_intentionally:
+                self.body.apply_damping()
+            else:
+                self.stand()
+        self.is_moving_intentionally = False
+        super().update(dt)
 
     @property
     def position(self):
-        """Get the position of the entity."""
         return self.body.position.x, self.body.position.y
 
     @position.setter
     def position(self, position: tuple[float, float]):
-        """Set the position of the entity by changing the position of its body."""
         self.body.position = Vec2d(position[0], position[1])
 
-    def stand(self):
-        """Make the entity stand."""
-        self.body.velocity = Vec2d(0, 0)
-
     def set_target_angle(self, angle: float):
-        """Set the target angle of the entity."""
         pass
 
     def update_angle_to_target(self, dt: float):
-        """Update the angle of the entity to the target angle."""
         pass
-
-    def update(self, dt):
-        """Update the entity."""
-        self.bounding_box = (
-            self.body.position.x - self.shape.radius,
-            self.body.position.y - self.shape.radius,
-            self.body.position.x + self.shape.radius,
-            self.body.position.y + self.shape.radius,
-        )
-
-        super().update(dt)

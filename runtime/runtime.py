@@ -3,23 +3,29 @@ from .world_objects import WorldObjectsController, WorldObject
 from .world_objects.entities.delver import Delver
 from .world_objects.items import Goal
 import pymunk
-import json
 from pytiling import (
     TilemapBorderTracer,
     PymunkTilemapPhysics,
 )
 from typing import TYPE_CHECKING
+from .config import PHYSICS_FPS
 
 if TYPE_CHECKING:
     from level.level import Level
 
 
 class Runtime:
-    def __init__(self, level: Any, render: bool):
+
+    def __init__(self, level: Any, render: bool, deterministic: bool = False):
         self.render = render
         self.level: "Level" = level
         self.space = pymunk.Space()
         self.space.gravity = (0, 0)
+        self.space.iterations = 30
+
+        self.deterministic = deterministic
+        self.PHYSICS_FIXED_DT = 1.0 / PHYSICS_FPS
+        self.physics_accumulator = 0.0
 
         self._setup_wall_physics()
 
@@ -35,15 +41,12 @@ class Runtime:
 
     def update(self, dt):
         self.world_objects_controller.update_world_objects(dt)
-        # self._check_collisions()
 
-        self.space.step(dt)
+        self.physics_accumulator += dt
 
-    # def _check_collisions(self):
-    #     if self.delver.check_collision(self.goal):
-    #         from app_manager import app_manager
-
-    #         app_manager.stop_game()
+        while self.physics_accumulator >= self.PHYSICS_FIXED_DT:
+            self.space.step(self.PHYSICS_FIXED_DT)
+            self.physics_accumulator -= self.PHYSICS_FIXED_DT
 
     def run(self):
         self.running = True
@@ -51,7 +54,6 @@ class Runtime:
     def stop(self):
         if not self.running:
             return
-
         self.running = False
 
     @property

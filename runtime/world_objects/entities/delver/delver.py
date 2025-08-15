@@ -7,7 +7,6 @@ from runtime.config import ASSETS_PATH
 
 
 class Delver(SkeletalEntity):
-    move_speed = 200
     run_angle = 0.0
 
     def __init__(self, runtime, space: pymunk.Space, render=True):
@@ -20,7 +19,6 @@ class Delver(SkeletalEntity):
         space.add(body, shape)
 
         body.setup_collision_handlers()
-        body.max_velocity = self.move_speed
 
         if render == True:
             delver_groups = {
@@ -40,9 +38,12 @@ class Delver(SkeletalEntity):
 
         super().__init__(runtime, body)
 
+    def draw(self, dt):
+        self.skeleton.draw(dt)
+        super().draw(dt)
+
     def update(self, dt):
         self.skeleton.set_position(self.body.position.x, self.body.position.y)
         self.skeleton.update(dt)
-        self.body.update(dt)
 
         super().update(dt)

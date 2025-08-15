@@ -1,6 +1,17 @@
+import itertools
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from runtime.runtime import Runtime
+
 class WorldObject:
-    def __init__(self, runtime):
+    _id_counter = itertools.count()
+
+    def __init__(self, runtime: "Runtime"):
         self.runtime = runtime
+
+        self.creation_id = next(WorldObject._id_counter)
+
         self._position = (0.0, 0.0)
 
         self._bounding_box: tuple[float, float, float, float] | None = None
