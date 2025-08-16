@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 
 class Item(WorldObject):
+
     def __init__(
         self,
         runtime,
@@ -67,6 +68,7 @@ class Item(WorldObject):
     @position.setter
     def position(self, position: tuple[float, float]):
         self._position = position
+        self._conditionally_set_spawn_based_id(position)
         if self.sprite:
             self._update_sprite_position()
 

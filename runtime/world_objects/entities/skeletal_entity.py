@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Callable
 from .entity import Entity
 
 if TYPE_CHECKING:
@@ -17,13 +17,13 @@ class SkeletalEntity(Entity):
         self.run_animation(None)
         super().stand()
 
-    def set_angle(self, angle: float):
-        """Set the angle of the skeletal entity."""
-        self.skeleton.set_angle(angle)
-
     @property
     def angle(self):
         return self.skeleton.angle
+
+    @angle.setter
+    def angle(self, angle: float):
+        self.skeleton.angle = angle
 
     def set_target_angle(self, angle: float):
         """Set the target angle of the skeletal entity."""
@@ -33,9 +33,15 @@ class SkeletalEntity(Entity):
         """Update the angle of the skeletal entity to the target angle."""
         self.skeleton.update_angle_to_target(dt)
 
-    def run_animation(self, animation_name: str | None, starting_frame=0, speed=1):
+    def run_animation(
+        self,
+        animation_name: str | None,
+        starting_frame=0,
+        speed=1,
+        on_end: Literal["_loop"] | Callable = "_loop",
+    ):
         """Run an animation on the skeletal entity."""
-        self.skeleton.run_animation(animation_name, starting_frame, speed)
+        self.skeleton.run_animation(animation_name, starting_frame, speed, on_end)
 
     def cleanup(self):
         if hasattr(self, "skeleton"):

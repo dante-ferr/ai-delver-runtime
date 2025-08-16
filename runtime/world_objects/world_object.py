@@ -4,15 +4,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from runtime.runtime import Runtime
 
-class WorldObject:
-    _id_counter = itertools.count()
 
+class WorldObject:
     def __init__(self, runtime: "Runtime"):
         self.runtime = runtime
 
-        self.creation_id = next(WorldObject._id_counter)
-
         self._position = (0.0, 0.0)
+        self._spawn_based_id: str | None = None
 
         self._bounding_box: tuple[float, float, float, float] | None = None
 
@@ -32,7 +30,23 @@ class WorldObject:
     @position.setter
     def position(self, position: tuple[float, float]):
         """Set the position of the world object."""
+        self._conditionally_set_spawn_based_id(position)
         self._position = position
+
+    def _conditionally_set_spawn_based_id(self, position: tuple[float, float]):
+        if self._spawn_based_id is None:
+            self._spawn_based_id = (
+                f"{self.__class__.__name__}:{position[0]}_{position[1]}"
+            )
+
+    @property
+    def spawn_based_id(self):
+        if self._spawn_based_id is None:
+            raise ValueError(
+                "World object has no spawn_based_id. The object's position must be set first."
+            )
+
+        return self._spawn_based_id
 
     def update(self, dt):
         """Update the world object."""

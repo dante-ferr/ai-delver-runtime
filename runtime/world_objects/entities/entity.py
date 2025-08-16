@@ -16,6 +16,7 @@ class EntityState(Enum):
 
 
 class Entity(WorldObject):
+
     def __init__(self, runtime, body: "EntityBody"):
         super().__init__(runtime)
         self.body = body
@@ -65,7 +66,6 @@ class Entity(WorldObject):
             else:
                 self.stand()
         self.is_moving_intentionally = False
-        super().update(dt)
 
     @property
     def position(self):
@@ -73,7 +73,16 @@ class Entity(WorldObject):
 
     @position.setter
     def position(self, position: tuple[float, float]):
+        self._conditionally_set_spawn_based_id(position)
         self.body.position = Vec2d(position[0], position[1])
+
+    @property
+    def angle(self):
+        return self.body.angle
+
+    @angle.setter
+    def angle(self, angle: float):
+        self.body.angle = angle
 
     def set_target_angle(self, angle: float):
         pass

@@ -16,15 +16,17 @@ if TYPE_CHECKING:
 
 class Runtime:
 
-    def __init__(self, level: Any, render: bool, deterministic: bool = False):
+    def __init__(self, level: Any, render: bool, physics: bool = True):
         self.render = render
         self.level: "Level" = level
         self.space = pymunk.Space()
         self.space.gravity = (0, 0)
         self.space.iterations = 30
 
-        self.deterministic = deterministic
-        self.PHYSICS_FIXED_DT = 1.0 / PHYSICS_FPS
+        self.execution_speed = 1.0
+
+        self.physics = physics
+        self.physics_dt = 1.0 / PHYSICS_FPS
         self.physics_accumulator = 0.0
 
         self._setup_wall_physics()
@@ -42,11 +44,15 @@ class Runtime:
     def update(self, dt):
         self.world_objects_controller.update_world_objects(dt)
 
+        if self.physics:
+            self.update_physics(dt)
+
+    def update_physics(self, dt):
         self.physics_accumulator += dt
 
-        while self.physics_accumulator >= self.PHYSICS_FIXED_DT:
-            self.space.step(self.PHYSICS_FIXED_DT)
-            self.physics_accumulator -= self.PHYSICS_FIXED_DT
+        while self.physics_accumulator >= self.physics_dt:
+            self.space.step(self.physics_dt)
+            self.physics_accumulator -= self.physics_dt
 
     def run(self):
         self.running = True
@@ -80,7 +86,7 @@ class Runtime:
 
         def _delver_factory(element):
             delver = Delver(self, space=space, render=self.render)
-            delver.set_angle(180)
+            delver.angle = 180
 
             _place_world_object(delver, unique_identifier="delver")
 
