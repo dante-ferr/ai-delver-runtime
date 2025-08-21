@@ -56,6 +56,9 @@ class Entity(WorldObject):
             print("STATE CHANGE: NORMAL")
             self.state = EntityState.NORMAL
 
+    def run_animation(self, animation_name: str | None):
+        pass
+
     def stand(self):
         self.brake()
 
@@ -66,6 +69,9 @@ class Entity(WorldObject):
             else:
                 self.stand()
         self.is_moving_intentionally = False
+
+        bb = self.shape.cache_bb()
+        self.bounding_box = (bb.left, bb.bottom, bb.right, bb.top)
 
     @property
     def position(self):

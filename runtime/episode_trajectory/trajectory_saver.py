@@ -44,8 +44,6 @@ class TrajectorySaver:
         with open(trajectory_file_path, "w") as f:
             f.write(trajectory_json)
 
-        logging.info(f"Trajectory saved to {trajectory_file_path}")
-
         metadata["trajectory_count"] = trajectory_index + 1
         self._write_metadata(metadata)
 
