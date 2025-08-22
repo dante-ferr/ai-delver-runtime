@@ -7,6 +7,7 @@ from .snapshots import (
 )
 from .delver_action import DelverAction
 
+
 @dataclass
 class EpisodeTrajectory:
     """
@@ -16,6 +17,7 @@ class EpisodeTrajectory:
 
     actions_per_second: int
     victorious: bool = False
+    level_hash: str = ""  # Unique hash of the level configuration
 
     # For the original, action-based replay
     delver_actions: "List[DelverAction]" = field(default_factory=list)
@@ -49,7 +51,7 @@ class EpisodeTrajectoryFactory:
         data = json.loads(json_string)
 
         episode_trajectory = EpisodeTrajectory(
-            data["actions_per_second"], data["victorious"]
+            data["actions_per_second"], data["victorious"], data["level_hash"]
         )
 
         if "delver_actions" in data:
