@@ -3,7 +3,6 @@ from runtime.episode_trajectory.episode_trajectory import (
     EpisodeTrajectory,
     EpisodeTrajectoryFactory,
 )
-from typing import Literal
 from ._get_trajectory_dir import get_trajectory_dir
 from typing import TYPE_CHECKING
 
