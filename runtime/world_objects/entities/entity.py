@@ -31,8 +31,6 @@ class Entity(WorldObject):
     def move(self, dt, move_angle: float):
         if self.state != EntityState.NORMAL:
             return
-        self.set_target_angle(-move_angle - 90)
-        self.update_angle_to_target(dt)
         self.is_moving_intentionally = True
         self.body.move(move_angle)
 
@@ -90,7 +88,12 @@ class Entity(WorldObject):
     def angle(self, angle: float):
         self.body.angle = angle
 
-    def set_target_angle(self, angle: float):
+    @property
+    def target_angle(self) -> float | None:
+        return None
+
+    @target_angle.setter
+    def target_angle(self, angle: float):
         pass
 
     def update_angle_to_target(self, dt: float):

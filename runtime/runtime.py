@@ -86,7 +86,6 @@ class Runtime:
 
         def _delver_factory(element):
             delver = Delver(self, space=space, render=self.render)
-            delver.angle = 180
 
             _place_world_object(delver, unique_identifier="delver")
 

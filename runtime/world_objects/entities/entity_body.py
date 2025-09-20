@@ -1,5 +1,4 @@
 import pymunk
-from typing import Literal
 from .entity import EntityState
 import math
 from pymunk import Vec2d
