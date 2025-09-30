@@ -25,10 +25,10 @@ class Delver(SkeletalEntity):
     def _skeleton_factory(self, render):
         if render == True:
             delver_groups = {
-                "head": pyglet.graphics.Group(6),
-                "feather": pyglet.graphics.Group(5),
-                "torso": pyglet.graphics.Group(3),
+                "feather": pyglet.graphics.Group(6),
+                "head": pyglet.graphics.Group(5),
                 "front_hand": pyglet.graphics.Group(4),
+                "torso": pyglet.graphics.Group(3),
                 "back_hand": pyglet.graphics.Group(2),
                 "front_foot": pyglet.graphics.Group(1),
                 "back_foot": pyglet.graphics.Group(0),
