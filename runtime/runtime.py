@@ -29,7 +29,7 @@ class Runtime:
         self.physics_dt = 1.0 / PHYSICS_FPS
         self.physics_accumulator = 0.0
 
-        self._setup_wall_physics()
+        self._setup_platform_physics()
 
         self.running = False
 
@@ -66,9 +66,9 @@ class Runtime:
     def tilemap(self):
         return self.level.map.tilemap
 
-    def _setup_wall_physics(self):
-        walls = self.level.map.tilemap.get_layer("walls")
-        border_tracer = TilemapBorderTracer(walls)
+    def _setup_platform_physics(self):
+        platforms = self.level.map.tilemap.get_layer("platforms")
+        border_tracer = TilemapBorderTracer(platforms)
         PymunkTilemapPhysics(border_tracer, self.space)
 
     def world_objects_controller_factory(self, space: "pymunk.Space"):
