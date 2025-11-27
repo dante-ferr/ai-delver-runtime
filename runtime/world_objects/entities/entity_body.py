@@ -37,6 +37,16 @@ class EntityBody(pymunk.Body):
     def move(self, move_angle: float):
         move_direction = Vec2d(1, 0).rotated(math.radians(move_angle))
         force_vector = move_direction * self.move_force
+
+        # Check if trying to move in the opposite direction of current velocity
+        if self.velocity.x * move_direction.x < 0:
+            # Apply braking force to change direction faster
+            braking_direction_x = (
+                -self.velocity.x / abs(self.velocity.x) if self.velocity.x != 0 else 0
+            )
+            braking_force_vector = Vec2d(braking_direction_x * self.braking_force, 0)
+            self.apply_force_at_local_point(braking_force_vector)
+
         self.apply_force_at_local_point(force_vector)
 
     def apply_damping(self):
@@ -63,6 +73,9 @@ class EntityBody(pymunk.Body):
     def receive_impact(self, impulse_vector: Vec2d):
         self.apply_impulse_at_local_point(impulse_vector)
 
+    def update(self, dt):
+        pass
+
     @property
     def is_on_ground(self) -> bool:
         """
@@ -73,6 +86,8 @@ class EntityBody(pymunk.Body):
 
         def check_normal(arbiter: pymunk.Arbiter):
             nonlocal is_grounded
+            if is_grounded:
+                return
 
             if self.shape == arbiter.shapes[0]:
                 normal = arbiter.contact_point_set.normal

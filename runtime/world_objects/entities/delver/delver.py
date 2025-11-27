@@ -41,9 +41,7 @@ class Delver(SkeletalEntity):
         return skeleton
 
     def jump(self, dt):
-        if self.is_on_ground:
-            # self.run_animation("jump")
-            self.body.jump()
+        self.body.jump()
 
     def draw(self, dt):
         self.skeleton.draw(dt)

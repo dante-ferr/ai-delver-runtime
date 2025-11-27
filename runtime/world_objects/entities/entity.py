@@ -81,6 +81,8 @@ class Entity(WorldObject):
         bb = self.shape.cache_bb()
         self.bounding_box = (bb.left, bb.bottom, bb.right, bb.top)
 
+        self.body.update(dt)
+
     @property
     def position(self):
         return self.body.position.x, self.body.position.y
