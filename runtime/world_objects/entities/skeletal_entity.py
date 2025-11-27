@@ -6,7 +6,6 @@ if TYPE_CHECKING:
 
 
 class SkeletalEntity(Entity):
-
     def __init__(self, runtime, body, skeleton: "Skeleton"):
         super().__init__(runtime, body)
         self.skeleton = skeleton

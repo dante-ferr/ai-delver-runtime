@@ -28,6 +28,11 @@ class Entity(WorldObject):
     def shape(self):
         return next(iter(self.body.shapes))
 
+    @property
+    def is_on_ground(self) -> bool:
+        """Check if the entity is on the ground."""
+        return self.body.is_on_ground
+
     def move(self, dt, move_angle: float):
         if self.state != EntityState.NORMAL:
             return
@@ -62,11 +67,16 @@ class Entity(WorldObject):
 
     def update(self, dt):
         if self.state == EntityState.NORMAL:
+            # If the entity is not actively receiving movement commands, apply braking to its horizontal velocity.
+            # Pymunk's linear_damping property handles general damping (like air resistance).
             if self.is_moving_intentionally:
                 self.body.apply_damping()
             else:
                 self.stand()
-        self.is_moving_intentionally = False
+
+        self.is_moving_intentionally = (
+            False  # Reset the flag for the next frame's input
+        )
 
         bb = self.shape.cache_bb()
         self.bounding_box = (bb.left, bb.bottom, bb.right, bb.top)

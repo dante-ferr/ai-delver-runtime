@@ -7,16 +7,12 @@ from runtime.config import ASSETS_PATH
 
 
 class Delver(SkeletalEntity):
+
     run_angle = 0.0
 
     def __init__(self, runtime, space: pymunk.Space, render=True):
-        mass = 1
-        radius = 10
-        body = DelverBody(mass=mass, moment=pymunk.moment_for_circle(mass, 0, radius))
-
-        shape = pymunk.Circle(body, radius)
-        shape.collision_type = 1
-        space.add(body, shape)
+        body = DelverBody()
+        space.add(body, body.shape)
 
         body.setup_collision_handlers()
 
@@ -43,6 +39,11 @@ class Delver(SkeletalEntity):
             bone.transform.smoothing_enabled["scale"] = False
 
         return skeleton
+
+    def jump(self, dt):
+        if self.is_on_ground:
+            # self.run_animation("jump")
+            self.body.jump()
 
     def draw(self, dt):
         self.skeleton.draw(dt)

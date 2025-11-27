@@ -8,6 +8,7 @@ with open(CURRENT_DIR / "config.json", "r") as f:
     config = json.load(f)
 
 PHYSICS_FPS = config["physics_fps"]
+GRAVITY = config["gravity"]
 
 def get_project_root() -> Path:
     """

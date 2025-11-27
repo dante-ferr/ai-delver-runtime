@@ -8,7 +8,7 @@ from pytiling import (
     PymunkTilemapPhysics,
 )
 from typing import TYPE_CHECKING
-from .config import PHYSICS_FPS
+from .config import PHYSICS_FPS, GRAVITY
 
 if TYPE_CHECKING:
     from level.level import Level
@@ -20,7 +20,8 @@ class Runtime:
         self.render = render
         self.level: "Level" = level
         self.space = pymunk.Space()
-        self.space.gravity = (0, 0)
+        self.space.gravity = (0, GRAVITY)
+
         self.space.iterations = 30
 
         self.execution_speed = 1.0
