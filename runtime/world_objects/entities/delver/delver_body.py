@@ -3,15 +3,15 @@ import pymunk
 
 
 class DelverBody(EntityBody):
-    MOVE_FORCE = 950.0
-    LINEAR_DAMPING = 8.0
+    MOVE_FORCE = 2200.0
+    LINEAR_DAMPING = 15.0
     BRAKING_FORCE = 900.0
     JUMP_IMPULSE = 350.0
 
-    COLLISION_MASK_SIZE = (16.0, 32.0)
+    COLLISION_MASK_SIZE = (16.0, 38.0)
     MASS = 1.0
 
-    JUMP_TOLERANCE_TIMER_MAX = 0.05
+    JUMP_TOLERANCE_TIMER_MAX = 0.1
 
     def __init__(self):
         width, height = self.COLLISION_MASK_SIZE
@@ -40,6 +40,17 @@ class DelverBody(EntityBody):
 
     def jump(self):
         if self.is_on_ground or self.jump_tolerance_timer > 0:
+
+            def check_normal(arbiter: pymunk.Arbiter):
+                if self.shape == arbiter.shapes[0]:
+                    normal = arbiter.contact_point_set.normal
+                else:
+                    normal = -arbiter.contact_point_set.normal
+
+                print(normal)
+
+            self.each_arbiter(check_normal)
+
             self.jumped = True
             impulse = (0, self.JUMP_IMPULSE)
             self.apply_impulse_at_local_point(impulse, (0, 0))

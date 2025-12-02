@@ -18,7 +18,7 @@ class EntityBody(pymunk.Body):
         """
         super().__init__(mass, moment)
 
-        # Assign constants to instance variables for potential per-instance modification.
+        # Assign constants to instance variables for per-instance modification.
         self.move_force = self.MOVE_FORCE
         self.braking_force = self.BRAKING_FORCE
         self.min_velocity_to_brake = self.MIN_VELOCITY_TO_BRAKE
@@ -38,9 +38,8 @@ class EntityBody(pymunk.Body):
         move_direction = Vec2d(1, 0).rotated(math.radians(move_angle))
         force_vector = move_direction * self.move_force
 
-        # Check if trying to move in the opposite direction of current velocity
+        # Apply braking force to change direction faster when moving opposite to current velocity.
         if self.velocity.x * move_direction.x < 0:
-            # Apply braking force to change direction faster
             braking_direction_x = (
                 -self.velocity.x / abs(self.velocity.x) if self.velocity.x != 0 else 0
             )
@@ -50,23 +49,21 @@ class EntityBody(pymunk.Body):
         self.apply_force_at_local_point(force_vector)
 
     def apply_damping(self):
-        # Apply damping only to the horizontal component of velocity
+        """Apply damping only to the horizontal component of velocity."""
         horizontal_velocity = Vec2d(self.velocity.x, 0)
         damping_force = -horizontal_velocity * self.LINEAR_DAMPING
         self.apply_force_at_local_point(damping_force)
 
     def brake(self):
-        # Only brake horizontal movement, preserve vertical velocity
+        """Brakes horizontal movement while preserving vertical velocity."""
         if abs(self.velocity.x) > self.min_velocity_to_brake:
-            # Calculate braking force for horizontal component
-            # Ensure braking_direction_x is 1 or -1, or 0 if velocity.x is 0
             braking_direction_x = (
                 -self.velocity.x / abs(self.velocity.x) if self.velocity.x != 0 else 0
             )
             braking_vector_x = Vec2d(braking_direction_x * self.braking_force, 0)
             self.apply_force_at_local_point(braking_vector_x)
         else:
-            # If horizontal velocity is very low, set it to zero, preserve vertical velocity
+            # If horizontal velocity is very low, set it to zero.
             self.velocity = Vec2d(0, self.velocity.y)
             self.angular_velocity = 0
 
@@ -79,26 +76,28 @@ class EntityBody(pymunk.Body):
     @property
     def is_on_ground(self) -> bool:
         """
-        Checks if the body is currently on a walkable surface by inspecting
-        the collision normals of all contact points.
+        Checks if the entity is on the ground using a segment query (raycast) downwards.
         """
-        is_grounded = False
+        if self.space == None:
+            return False
 
-        def check_normal(arbiter: pymunk.Arbiter):
-            nonlocal is_grounded
-            if is_grounded:
-                return
+        radius = 0
+        if hasattr(self.shape, "radius"):
+            radius = self.shape.radius
 
-            if self.shape == arbiter.shapes[0]:
-                normal = arbiter.contact_point_set.normal
-            else:
-                normal = -arbiter.contact_point_set.normal
+        start = self.position
+        # Raycast down by radius + a small buffer.
+        cast_distance = Vec2d(0, radius + 5.0)
+        end = self.position + cast_distance
 
-            # Check if the normal is pointing sufficiently "up" (negative Y)
-            if normal.y < -self.GROUND_THRESHOLD:
-                is_grounded = True
+        query = self.space.segment_query_first(
+            start, end, 1.0, pymunk.ShapeFilter(mask=pymunk.ShapeFilter.ALL_MASKS())
+        )
 
-        # Call each_arbiter with ONLY the callback function.
-        self.each_arbiter(check_normal)
+        # Validate the hit, ensuring it's not the entity's own shape.
+        if query and query.shape != self.shape:
+            # Check the normal of the hit surface to ensure it's not a steep slope.
+            if query.normal.y < -self.GROUND_THRESHOLD:
+                return True
 
-        return is_grounded
+        return False
