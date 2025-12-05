@@ -1,9 +1,10 @@
 from ..entity_body import EntityBody
 import pymunk
+from pymunk import Vec2d
 
 
 class DelverBody(EntityBody):
-    MOVE_FORCE = 2200.0
+    MOVE_FORCE = 2300.0
     LINEAR_DAMPING = 15.0
     BRAKING_FORCE = 900.0
     JUMP_IMPULSE = 350.0
@@ -11,11 +12,12 @@ class DelverBody(EntityBody):
     COLLISION_MASK_SIZE = (16.0, 38.0)
     MASS = 1.0
 
-    JUMP_TOLERANCE_TIMER_MAX = 0.1
+    JUMP_TOLERANCE_TIMER_MAX = 0.125
 
     def __init__(self):
         width, height = self.COLLISION_MASK_SIZE
 
+        # Reverted to sharp corners as requested
         left = -width / 2
         right = width / 2
         bottom = 0
@@ -26,7 +28,6 @@ class DelverBody(EntityBody):
         center_of_gravity = (0, bottom)
         super().__init__(self.MASS, float("inf"))
 
-        # The shape's vertices are defined relative to the body's origin.
         self.shape = pymunk.Poly(
             self,
             vertices,
@@ -40,18 +41,25 @@ class DelverBody(EntityBody):
 
     def jump(self):
         if self.is_on_ground or self.jump_tolerance_timer > 0:
-
-            def check_normal(arbiter: pymunk.Arbiter):
-                if self.shape == arbiter.shapes[0]:
-                    normal = arbiter.contact_point_set.normal
-                else:
-                    normal = -arbiter.contact_point_set.normal
-
-                print(normal)
-
-            self.each_arbiter(check_normal)
-
             self.jumped = True
+
+            # Check if we are physically touching something (Arbiter exists)
+            has_contact = False
+
+            def check_contact(arbiter):
+                nonlocal has_contact
+                has_contact = True
+
+            self.each_arbiter(check_contact)
+
+            # GAP FIX:
+            # If we are allowed to jump (Raycast/Coyote) but have NO physical contact,
+            # and we are falling, we are in the "Raycast Buffer Gap".
+            # In this specific case, we stabilize the jump to prevent the "Small Jump" bug.
+            # Otherwise (if we have contact), we respect existing momentum (Realism).
+            if not has_contact and self.velocity.y < 0:
+                self.velocity = Vec2d(self.velocity.x, 0)
+
             impulse = (0, self.JUMP_IMPULSE)
             self.apply_impulse_at_local_point(impulse, (0, 0))
             self.jump_tolerance_timer = 0

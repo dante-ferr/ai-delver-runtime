@@ -85,7 +85,7 @@ class EntityBody(pymunk.Body):
         if hasattr(self.shape, "radius"):
             radius = self.shape.radius
 
-        start = self.position
+        start = self.position + Vec2d(0, -1)
         # Raycast down by radius + a small buffer.
         cast_distance = Vec2d(0, radius + 5.0)
         end = self.position + cast_distance

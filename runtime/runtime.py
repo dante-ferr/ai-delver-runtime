@@ -22,7 +22,21 @@ class Runtime:
         self.space = pymunk.Space()
         self.space.gravity = (0, GRAVITY)
 
-        self.space.iterations = 30
+        # FIX 1: Increase Collision Slop
+        # 0.01 is too strict and causes instability/sinking due to floating point noise.
+        # 0.1 is standard, but for tilemaps 0.5 often feels smoother.
+        self.space.collision_slop = 0.1
+
+        # FIX 2: Tune Collision Bias (Stiffness)
+        # Your previous value (0.15) only corrected 15% of overlap per step, causing sinking.
+        # We increase this to 0.9 (90%) to make the ground feel solid and snappy.
+        # Pymunk formula: bias = 1.0 - remaining_overlap_percent ** (1/dt)
+        # We want to remove 90% of overlap per step.
+        correction_percentage = 0.9
+        self.space.collision_bias = pow(1.0 - correction_percentage, PHYSICS_FPS)
+
+        # High iterations are good for stability, 60 is excellent.
+        self.space.iterations = 60
 
         self.execution_speed = 1.0
 
@@ -43,6 +57,9 @@ class Runtime:
         self.goal = self.world_objects_controller.get_world_object("goal")
 
     def update(self, dt):
+        # We update the logic/AI of world objects.
+        # Note: We should ideally NOT apply physics forces here directly,
+        # but rather set "intent" that is applied in the physics step.
         self.world_objects_controller.update_world_objects(dt)
 
         if self.physics:
@@ -51,9 +68,27 @@ class Runtime:
     def update_physics(self, dt):
         self.physics_accumulator += dt
 
+        # We cap the accumulator to prevent the "spiral of death"
+        # if the game lags significantly (e.g. breakpoint or heavy load).
+        if self.physics_accumulator > 0.25:
+            self.physics_accumulator = 0.25
+
         while self.physics_accumulator >= self.physics_dt:
+            # Pymunk clears forces after every step. If we step twice in one frame
+            # (to catch up), the second step would have ZERO move force if we didn't
+            # re-apply it here.
+            self._apply_continuous_forces()
+
             self.space.step(self.physics_dt)
             self.physics_accumulator -= self.physics_dt
+
+    def _apply_continuous_forces(self):
+        """
+        Re-applies forces that should persist across physics steps.
+        This is necessary because space.step() clears all forces on bodies.
+        """
+        # For now it should be empty. I might add stuff here if it's needed.
+        pass
 
     def run(self):
         self.running = True
@@ -87,12 +122,10 @@ class Runtime:
 
         def _delver_factory(element):
             delver = Delver(self, space=space, render=self.render)
-
             _place_world_object(delver, unique_identifier="delver")
 
         def _goal_factory(element):
             goal = Goal(self, element.canvas_object_name, render=self.render)
-
             _place_world_object(goal, unique_identifier="goal")
 
         world_objects_factories = {"delver": _delver_factory, "goal": _goal_factory}
