@@ -1,14 +1,20 @@
+from enum import Enum, auto
 import pyglet
 from pyglet_dragonbones.skeleton import Skeleton
 from .delver_body import DelverBody
 import pymunk
-from ..skeletal_entity import SkeletalEntity
+from ..skeletal_entity import SkeletalEntity, LocomotionState
 from runtime.config import ASSETS_PATH
+
+
+class DelverLocomotionState(Enum):
+    JUMP = auto()
 
 
 class Delver(SkeletalEntity):
 
     run_angle = 0.0
+    AIR_TILT_ANGLE = 20.0
 
     def __init__(self, runtime, space: pymunk.Space, render=True):
         body = DelverBody()
@@ -41,7 +47,10 @@ class Delver(SkeletalEntity):
         return skeleton
 
     def jump(self, dt):
-        self.body.jump()
+        jumped = self.body.jump()
+        if jumped:
+            self.locomotion_state = DelverLocomotionState.JUMP
+            self._play_locomotion_animation()
 
     def draw(self, dt):
         self.skeleton.draw(dt)
@@ -51,4 +60,44 @@ class Delver(SkeletalEntity):
         self.skeleton.position = (self.body.position.x, self.body.position.y)
         self.skeleton.update(dt)
 
+        is_moving = self.is_moving_intentionally
+
         super().update(dt)
+
+        self._update_tilt(is_moving)
+
+    def _update_tilt(self, is_moving: bool):
+        is_airborne = self.locomotion_state in (
+            LocomotionState.GO_UP,
+            LocomotionState.FALL,
+            DelverLocomotionState.JUMP,
+        )
+
+        if is_airborne and is_moving:
+            self.angle = (
+                -self.AIR_TILT_ANGLE if self.scale[0] > 0 else self.AIR_TILT_ANGLE
+            )
+        else:
+            self.angle = 0.0
+
+    def _update_locomotion_state(self, is_moving: bool):
+        # If we are jumping and still going up, maintain JUMP state
+        if self.locomotion_state == DelverLocomotionState.JUMP:
+            if self.velocity.y > 0:
+                return
+
+        super()._update_locomotion_state(is_moving)
+
+    def _on_jump_finish(self):
+        if self.locomotion_state == DelverLocomotionState.JUMP:
+            if self.velocity.y > 0:
+                self.locomotion_state = LocomotionState.GO_UP
+            else:
+                self.locomotion_state = LocomotionState.FALL
+            self._play_locomotion_animation()
+
+    def _play_locomotion_animation(self):
+        if self.locomotion_state == DelverLocomotionState.JUMP:
+            self.run_animation("jump", on_end=self._on_jump_finish)
+        else:
+            super()._play_locomotion_animation()

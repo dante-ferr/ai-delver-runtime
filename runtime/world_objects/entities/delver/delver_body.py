@@ -7,9 +7,9 @@ class DelverBody(EntityBody):
     MOVE_FORCE = 2300.0
     LINEAR_DAMPING = 15.0
     BRAKING_FORCE = 900.0
-    JUMP_IMPULSE = 350.0
+    JUMP_IMPULSE = 370.0
 
-    COLLISION_MASK_SIZE = (16.0, 38.0)
+    COLLISION_MASK_SIZE = (10.0, 38.0)
     MASS = 1.0
 
     JUMP_TOLERANCE_TIMER_MAX = 0.125
@@ -63,6 +63,8 @@ class DelverBody(EntityBody):
             impulse = (0, self.JUMP_IMPULSE)
             self.apply_impulse_at_local_point(impulse, (0, 0))
             self.jump_tolerance_timer = 0
+
+        return self.jumped
 
     def update(self, dt):
         super().update(dt)

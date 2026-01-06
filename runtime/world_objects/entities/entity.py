@@ -84,6 +84,16 @@ class Entity(WorldObject):
         self.body.update(dt)
 
     @property
+    def velocity(self) -> Vec2d:
+        """Get the current velocity vector of the entity."""
+        return self.body.velocity
+
+    @property
+    def speed(self) -> float:
+        """Get the current speed of the entity."""
+        return self.body.velocity.length
+
+    @property
     def position(self):
         return self.body.position.x, self.body.position.y
 
