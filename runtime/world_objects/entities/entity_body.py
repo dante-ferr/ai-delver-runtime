@@ -81,23 +81,54 @@ class EntityBody(pymunk.Body):
         if self.space == None:
             return False
 
-        radius = 0
-        if hasattr(self.shape, "radius"):
-            radius = self.shape.radius
+        if not hasattr(self, "shape") or self.shape is None:
+            return False
 
-        start = self.position + Vec2d(0, -1)
-        # Raycast down by radius + a small buffer.
-        cast_distance = Vec2d(0, radius + 5.0)
-        end = self.position + cast_distance
+        # 1. Check physical contacts (Arbiters)
+        # This ensures that if the physics engine supports the entity, we consider it on ground.
+        # This fixes the issue where the entity is standing on the very edge of a ledge.
+        is_touching_ground = False
 
-        query = self.space.segment_query_first(
-            start, end, 1.0, pymunk.ShapeFilter(mask=pymunk.ShapeFilter.ALL_MASKS())
-        )
+        def check_arbiter(arbiter):
+            nonlocal is_touching_ground
+            if is_touching_ground:
+                return
 
-        # Validate the hit, ensuring it's not the entity's own shape.
-        if query and query.shape != self.shape:
-            # Check the normal of the hit surface to ensure it's not a steep slope.
-            if query.normal.y < -self.GROUND_THRESHOLD:
-                return True
+            n = arbiter.contact_point_set.normal
+            # Normal points from shapes[0] to shapes[1]
+            if arbiter.shapes[0] == self.shape:
+                # Body is first. Normal points Body -> Other. We want Down (y < -threshold).
+                if n.y < -self.GROUND_THRESHOLD:
+                    is_touching_ground = True
+            else:
+                # Body is second. Normal points Other -> Body. We want Up (y > threshold).
+                if n.y > self.GROUND_THRESHOLD:
+                    is_touching_ground = True
+
+        self.each_arbiter(check_arbiter)
+        if is_touching_ground:
+            return True
+
+        # 2. Raycast fallback
+        # This handles cases where we are slightly above ground (coyote time, landing detection).
+        bb = self.shape.cache_bb()
+        start_y = bb.bottom + 1.0
+        end_y = bb.bottom - 2.0  # Reduced distance to prevent false positives in air
+
+        width = bb.right - bb.left
+        inset = 1.0  # Restored inset to avoid wall edges
+        x_checks = [bb.left + inset, (bb.left + bb.right) / 2, bb.right - inset]
+
+        for x in x_checks:
+            start = Vec2d(x, start_y)
+            end = Vec2d(x, end_y)
+
+            query = self.space.segment_query_first(
+                start, end, 1.0, pymunk.ShapeFilter(mask=pymunk.ShapeFilter.ALL_MASKS())
+            )
+
+            if query and query.shape != self.shape:
+                if query.normal.y > self.GROUND_THRESHOLD:
+                    return True
 
         return False

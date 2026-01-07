@@ -41,6 +41,8 @@ class SkeletalEntity(Entity):
 
         super().update(dt)
 
+        print(self.is_on_ground)
+
         self._update_locomotion_state(is_moving)
         if not self.is_on_ground:
             # Only update if velocity is significant. This prevents overwriting the
@@ -54,7 +56,6 @@ class SkeletalEntity(Entity):
 
         if self.is_on_ground:
             if self.locomotion_state in (LocomotionState.GO_UP, LocomotionState.FALL):
-                print(self.previous_on_air_velocity[1])
                 if (
                     self.previous_on_air_velocity[1]
                     <= self.LAND_ANIMATION_REQUIRED_FALLING_SPEED
