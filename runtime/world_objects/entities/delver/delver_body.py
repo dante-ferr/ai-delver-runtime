@@ -12,7 +12,7 @@ class DelverBody(EntityBody):
     COLLISION_MASK_SIZE = (10.0, 38.0)
     MASS = 1.0
 
-    JUMP_TOLERANCE_TIMER_MAX = 0.125
+    JUMP_TOLERANCE_TIMER_MAX = 0.105
     JUMP_COOLDOWN_MAX = 0.2
 
     def __init__(self):
