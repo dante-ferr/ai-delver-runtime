@@ -15,12 +15,12 @@ class TrajectorySaver:
         self.metadata_manager = TrajectoryMetadataManager(agent_name)
         self.trajectory_status_calculator = TrajectoryStatsCalculator(agent_name)
 
-    def save_trajectory_json(self, trajectory_json: str):
+    async def save_trajectory_json(self, trajectory_json: str):
         """Saves a trajectory JSON, naming it with an incrementing index."""
         # The trajectory_dir property also ensures the directory exists.
         trajectory_dir = self.trajectory_dir
 
-        trajectory_index = (
+        trajectory_index = await (
             self.trajectory_status_calculator.get_amount_of_trajectories()
         )
 
@@ -29,9 +29,9 @@ class TrajectorySaver:
         with open(trajectory_file_path, "w") as f:
             f.write(trajectory_json)
 
-        metadata = self.metadata_manager.read_metadata()
+        metadata = await self.metadata_manager.read_metadata()
         metadata["trajectory_count"] = trajectory_index + 1
-        self.metadata_manager.write_metadata(metadata)
+        await self.metadata_manager.write_metadata(metadata)
 
     @property
     def trajectory_dir(self) -> "Path":

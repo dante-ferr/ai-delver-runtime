@@ -5,7 +5,7 @@ from .delver_body import DelverBody
 import pymunk
 from ..skeletal_entity import SkeletalEntity, LocomotionState
 from runtime.config import ASSETS_PATH
-
+from utils import vector_to_angle
 
 class DelverLocomotionState(Enum):
     JUMP = auto()
@@ -13,7 +13,6 @@ class DelverLocomotionState(Enum):
 
 class Delver(SkeletalEntity):
 
-    run_angle = 0.0
     AIR_TILT_ANGLE = 20.0
 
     def __init__(self, runtime, space: pymunk.Space, render=True):
@@ -45,6 +44,12 @@ class Delver(SkeletalEntity):
             bone.transform.smoothing_enabled["scale"] = False
 
         return skeleton
+
+    def run(self, dt, direction: int):
+        """
+        Make the delver run in a given direction. -1 = left, 1 = right
+        """
+        super().move(dt, vector_to_angle((direction, 0)))
 
     def jump(self, dt):
         jumped = self.body.jump()

@@ -41,8 +41,6 @@ class SkeletalEntity(Entity):
 
         super().update(dt)
 
-        print(self.is_on_ground)
-
         self._update_locomotion_state(is_moving)
         if not self.is_on_ground:
             # Only update if velocity is significant. This prevents overwriting the

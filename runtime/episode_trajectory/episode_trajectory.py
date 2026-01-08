@@ -39,9 +39,9 @@ class EpisodeTrajectory:
         """Converts the episode trajectory to a JSON string."""
         return json.dumps(asdict(self), indent=2)
 
-    def save(self, agent_name: str):
+    async def save(self, agent_name: str):
         """Saves the current trajectory to the trajectory directory."""
-        TrajectorySaver(agent_name).save_trajectory_json(self.to_json())
+        await TrajectorySaver(agent_name).save_trajectory_json(self.to_json())
 
 
 class EpisodeTrajectoryFactory:

@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from runtime.episode_trajectory.snapshots import FrameSnapshot
 
 
-# --- Helper functions for smooth interpolation ---
 def lerp(a: float, b: float, alpha: float) -> float:
     """Linearly interpolates between two scalar values."""
     return a + alpha * (b - a)
