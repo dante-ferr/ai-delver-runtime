@@ -47,6 +47,7 @@ class Runtime:
         self._setup_platform_physics()
 
         self.running = False
+        self.is_replay = False
 
         self.world_objects_controller = self.world_objects_controller_factory(
             self.space

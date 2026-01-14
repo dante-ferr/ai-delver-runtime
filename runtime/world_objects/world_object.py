@@ -74,3 +74,7 @@ class WorldObject:
 
     def cleanup(self):
         pass
+
+    @property
+    def in_replay(self):
+        return self.runtime.is_replay

@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 import pyglet
 from pyglet_dragonbones.skeleton import Skeleton
 from .delver_body import DelverBody
@@ -7,13 +7,15 @@ from ..skeletal_entity import SkeletalEntity, LocomotionState
 from runtime.config import ASSETS_PATH
 from utils import vector_to_angle
 
-class DelverLocomotionState(Enum):
-    JUMP = auto()
+
+class DelverLocomotionState(str, Enum):
+    JUMP = "JUMP"
 
 
 class Delver(SkeletalEntity):
 
     AIR_TILT_ANGLE = 20.0
+    locomotion_state_enums = [DelverLocomotionState, LocomotionState]
 
     def __init__(self, runtime, space: pymunk.Space, render=True):
         body = DelverBody()
@@ -21,7 +23,8 @@ class Delver(SkeletalEntity):
 
         body.setup_collision_handlers()
 
-        super().__init__(runtime, body, self._skeleton_factory(render))
+        skeleton = self._skeleton_factory(render) if render else None
+        super().__init__(runtime, body, skeleton)
 
     def _skeleton_factory(self, render):
         if render == True:
@@ -55,21 +58,24 @@ class Delver(SkeletalEntity):
         jumped = self.body.jump()
         if jumped:
             self.locomotion_state = DelverLocomotionState.JUMP
-            self._play_locomotion_animation()
+            self.play_locomotion_animation()
 
     def draw(self, dt):
-        self.skeleton.draw(dt)
+        if self.skeleton:
+            self.skeleton.draw(dt)
         super().draw(dt)
 
     def update(self, dt):
-        self.skeleton.position = (self.body.position.x, self.body.position.y)
-        self.skeleton.update(dt)
+        if self.skeleton:
+            self.skeleton.position = (self.body.position.x, self.body.position.y)
+            self.skeleton.update(dt)
 
         is_moving = self.is_moving_intentionally
 
         super().update(dt)
 
-        self._update_tilt(is_moving)
+        if self.skeleton:
+            self._update_tilt(is_moving)
 
     def _update_tilt(self, is_moving: bool):
         is_airborne = self.locomotion_state in (
@@ -80,7 +86,7 @@ class Delver(SkeletalEntity):
 
         if is_airborne and is_moving:
             self.angle = (
-                -self.AIR_TILT_ANGLE if self.scale[0] > 0 else self.AIR_TILT_ANGLE
+                self.AIR_TILT_ANGLE if self.scale[0] > 0 else -self.AIR_TILT_ANGLE
             )
         else:
             self.angle = 0.0
@@ -99,10 +105,10 @@ class Delver(SkeletalEntity):
                 self.locomotion_state = LocomotionState.GO_UP
             else:
                 self.locomotion_state = LocomotionState.FALL
-            self._play_locomotion_animation()
+            self.play_locomotion_animation()
 
-    def _play_locomotion_animation(self):
+    def play_locomotion_animation(self):
         if self.locomotion_state == DelverLocomotionState.JUMP:
             self.run_animation("jump", on_end=self._on_jump_finish)
         else:
-            super()._play_locomotion_animation()
+            super().play_locomotion_animation()

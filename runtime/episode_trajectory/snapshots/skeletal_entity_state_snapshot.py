@@ -9,6 +9,7 @@ from typing import cast, TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from runtime.world_objects.entities.entity import Entity
+    from world_objects.entities.skeletal_entity import LocomotionState
 
 
 @dataclass
@@ -18,7 +19,7 @@ class SkeletalEntityStateSnapshot(EntityStateSnapshot):
     This is designed to be easily serialized to JSON.
     """
 
-    animation_name: str | None = field(default=None)
+    locomotion_state: str = field(default="IDLE")
 
     entity_type: str = field(default="SkeletalEntity")
 
@@ -26,16 +27,17 @@ class SkeletalEntityStateSnapshot(EntityStateSnapshot):
         super().apply_to_entity(entity)
 
         entity = cast("SkeletalEntity", entity)
-        entity.run_animation(self.animation_name)
-
+        entity.locomotion_state = entity.resolve_locomotion_state(self.locomotion_state)
 
 class SkeletalEntityStateSnapshotFactory(EntityStateSnapshotFactory):
     def _get_state_snapshot_args(self, entity: "Entity"):
         entity = cast("SkeletalEntity", entity)
 
+        locomotion_state = entity.locomotion_state
+
         return {
             **super()._get_state_snapshot_args(entity),
-            "animation_name": entity.skeleton.current_animation_name,
+            "locomotion_state": getattr(locomotion_state, "value", locomotion_state),
         }
 
     def create_state_snapshot_from_entity(
