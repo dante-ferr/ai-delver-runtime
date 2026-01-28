@@ -3,13 +3,15 @@ from .entity_state_snapshot import (
     EntityStateSnapshot,
     EntityStateSnapshotFactory,
 )
-from runtime.world_objects.entities.skeletal_entity import SkeletalEntity
+from runtime.world_objects.entities.skeletal_entity import (
+    SkeletalEntity,
+    LocomotionState,
+)
 from typing import cast, TYPE_CHECKING, Any
 
 
 if TYPE_CHECKING:
     from runtime.world_objects.entities.entity import Entity
-    from world_objects.entities.skeletal_entity import LocomotionState
 
 
 @dataclass
@@ -20,6 +22,7 @@ class SkeletalEntityStateSnapshot(EntityStateSnapshot):
     """
 
     locomotion_state: str = field(default="IDLE")
+    move_angle: float | None = field(default=None)
 
     entity_type: str = field(default="SkeletalEntity")
 
@@ -28,6 +31,10 @@ class SkeletalEntityStateSnapshot(EntityStateSnapshot):
 
         entity = cast("SkeletalEntity", entity)
         entity.locomotion_state = entity.resolve_locomotion_state(self.locomotion_state)
+        entity.move_angle = self.move_angle
+
+        if entity.is_moving_intentionally:
+            entity.apply_move_visuals()
 
 class SkeletalEntityStateSnapshotFactory(EntityStateSnapshotFactory):
     def _get_state_snapshot_args(self, entity: "Entity"):
@@ -38,6 +45,8 @@ class SkeletalEntityStateSnapshotFactory(EntityStateSnapshotFactory):
         return {
             **super()._get_state_snapshot_args(entity),
             "locomotion_state": getattr(locomotion_state, "value", locomotion_state),
+            "move_angle": entity.move_angle,
+            "is_moving_intentionally": entity.is_moving_intentionally,
         }
 
     def create_state_snapshot_from_entity(

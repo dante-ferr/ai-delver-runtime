@@ -24,14 +24,25 @@ class SkeletalEntity(Entity):
         self._locomotion_state = LocomotionState.IDLE
         self.previous_on_air_velocity = (0, 0)
 
+        self.move_angle: None | float = None
+
     def move(self, dt, move_angle: float):
         super().move(dt, move_angle)
 
+        # The move angle is saved to capture the entity's intention to generate precise replays
+        self.move_angle = move_angle
+
         if self.skeleton:
-            if move_angle > 270 or move_angle < 90:
-                self.scale = (1, 1)
-            elif move_angle > 90 and move_angle < 270:
-                self.scale = (-1, 1)
+            self.apply_move_visuals()
+
+    def apply_move_visuals(self):
+        if self.move_angle == None:
+            return
+
+        if self.move_angle > 270 or self.move_angle < 90:
+            self.scale = (1, 1)
+        elif self.move_angle > 90 and self.move_angle < 270:
+            self.scale = (-1, 1)
 
     def stand(self):
         """Make the skeletal entity stand."""
