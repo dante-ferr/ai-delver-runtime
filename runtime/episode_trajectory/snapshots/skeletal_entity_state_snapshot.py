@@ -23,6 +23,7 @@ class SkeletalEntityStateSnapshot(EntityStateSnapshot):
 
     locomotion_state: str = field(default="IDLE")
     move_angle: float | None = field(default=None)
+    is_moving_intentionally: bool = field(default=False)
 
     entity_type: str = field(default="SkeletalEntity")
 
