@@ -1,3 +1,4 @@
+import math
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 from ..world_object import WorldObject
@@ -16,6 +17,7 @@ class EntityState(Enum):
 
 
 class Entity(WorldObject):
+    MAX_SPEED = (500.0, 1000.0)
 
     def __init__(self, runtime, body: "EntityBody"):
         super().__init__(runtime)
@@ -74,6 +76,8 @@ class Entity(WorldObject):
             else:
                 self.stand()
 
+        self._limit_speed()
+
         self.is_moving_intentionally = (
             False  # Reset the flag for the next frame's input
         )
@@ -82,6 +86,15 @@ class Entity(WorldObject):
         self.bounding_box = (bb.left, bb.bottom, bb.right, bb.top)
 
         self.body.update(dt)
+
+    def _limit_speed(self):
+        vx, vy = self.body.velocity
+        max_vx, max_vy = self.MAX_SPEED
+        if abs(vx) > max_vx:
+            vx = math.copysign(max_vx, vx)
+        if abs(vy) > max_vy:
+            vy = math.copysign(max_vy, vy)
+        self.body.velocity = Vec2d(vx, vy)
 
     @property
     def velocity(self) -> Vec2d:
